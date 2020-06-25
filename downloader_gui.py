@@ -6,12 +6,12 @@ layout = [
     [sg.Text("Youtube Link: "), sg.InputText(key="vid_url")],
     [sg.Text("Choose save location: "), sg.FolderBrowse(target=(2, 0))],
     [sg.InputText(key="save_folder", disabled=True)],
-    [sg.Submit("Download"), sg.Cancel('Cancel')]
+    [sg.Button("Download", key="Download mp4"), sg.Button("Download mp3"), sg.Cancel('Cancel')]
 ]
 window = sg.Window('Youtube mp3 downloader', layout)
 
 
-def download_event():
+def download_event(event : str):
     global values
 
     if values["vid_url"]:
@@ -34,10 +34,17 @@ def download_event():
     #     stay = sg.one_line_progress_meter('My Meter', i + 1, 10000, 'key', 'Optional message', orientation='h')
     #     if not stay:
     #         return
-    try:
-        ytd.download_to_mp3(url, path)
-    except:
-        print("Couldn't download the video")
+
+    if event.split()[1] == "mp3":
+        status, log = ytd.download_to_mp3(url,path)
+    else:
+        status, log = ytd.download_video(url, path)
+
+    if status == True:
+        sg.Popup(log)
+    else:
+        sg.Popup(log, button_color=["white","red"])
+
 
 
 while True:
@@ -48,8 +55,9 @@ while True:
         print(x, ": ", y)
     if event in (sg.WIN_CLOSED, "Cancel"):
         break
-    if event == 'Download':
-        download_event()
+    if event in ("Download mp4", "Download mp3"):
+        download_event(event)
+
 
 
 window.close()
